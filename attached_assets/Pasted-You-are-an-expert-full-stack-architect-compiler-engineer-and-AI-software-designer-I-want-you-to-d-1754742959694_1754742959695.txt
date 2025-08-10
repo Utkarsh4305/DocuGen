@@ -1,0 +1,118 @@
+You are an expert full-stack architect, compiler engineer, and AI software designer. I want you to design and build a complete Universal Code Transpiler project with the following exact requirements. Do not skip or compromise on any detail.
+
+Goal: Build a system that allows a user to upload a full project folder (e.g., React frontend + Python backend + Firebase). The system must:
+
+Analyze the entire tech stack of the uploaded project (frontend, backend, database, and other services).
+
+Detect languages, frameworks, and libraries used, showing percentage distribution (like GitHub language stats).
+
+Allow the user to selectively migrate parts of the project (frontend, backend, database) into other stacks/frameworks/languages.
+
+Perform full code transpilation from source to target language/framework, preserving:
+
+UI
+
+Logic
+
+State management
+
+API integrations
+
+Build/deployment compatibility
+
+Output a fully runnable, downloadable folder with the converted project. The migrated project must mimic the original functionality entirely.
+
+Start without LLMs — use AST parsing, code-only analysis, and a Universal Intermediate Representation (UIR) to represent the original app before generating the target code.
+
+Supported Conversions (Bidirectional):
+
+React ↔ React Native
+
+React ↔ Flutter
+
+React ↔ Kotlin (Jetpack Compose)
+
+Flutter ↔ Kotlin (Jetpack Compose)
+
+Flutter ↔ SwiftUI
+
+Kotlin ↔ SwiftUI
+
+React ↔ TypeScript
+
+Node.js (Express) ↔ Python (FastAPI/Django)
+
+Node.js ↔ Go
+
+Python ↔ Go
+
+SQL ↔ NoSQL (MongoDB)
+(Ensure extensibility so more conversions can be added easily)
+
+Language/Framework Categorization:
+
+Create a JSON or DB table that categorizes all major programming languages into their primary domains:
+
+Frontend Web Development (React, Vue, Angular, Svelte, etc.)
+
+Mobile Development (Kotlin, Swift, Flutter, React Native, etc.)
+
+Backend/API Development (Node.js, Python, Go, Java Spring Boot, etc.)
+
+Systems Programming (C, C++, Rust, etc.)
+
+Data Science & AI (Python, R, Julia, etc.)
+
+Database Languages (SQL, PL/SQL, etc.)
+
+Legacy & Specialized (COBOL, FORTRAN, etc.)
+
+Each entry must include: language name, primary purpose, notable frameworks/tools, ecosystem maturity, and difficulty level.
+
+Technical Requirements:
+
+Backend: Python or Node.js (your choice, but must support AST parsing & file system handling).
+
+Frontend: Modern web stack (React + TailwindCSS + animations).
+
+Core Engine: Build a UIR generator that can:
+
+Parse project files into AST
+
+Normalize into UIR format
+
+Map UIR nodes to target language/framework code templates
+
+Generate target code with minimal manual fixes needed
+
+File Handling: Must handle nested project structures, package managers (npm, pip, gradle), and asset migration.
+
+Extensibility: Modular system so adding new conversions or rules doesn’t require rewriting the core.
+
+Testing: Auto-generate and run test cases on migrated projects to verify functional parity.
+
+UI Features:
+
+Project upload (folder or zip)
+
+Stack analysis view (pie chart + list of detected tech)
+
+Conversion options (dropdowns for each layer: frontend/backend/database)
+
+Download converted project as zip
+
+Status/progress view while converting
+
+Output:
+
+Provide complete system architecture diagram
+
+Provide backend + frontend code in a deploy-ready format
+
+Provide example UIR schema and sample conversions
+
+Provide language categorization JSON
+
+Provide documentation for adding new conversion rules
+
+Build this as a production-ready MVP that I can extend into a full SaaS product. Ensure nothing from the requirements is skipped.

@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Code Transpiler - Professional Development Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    'mono': ['Fira Code', 'monospace']
+                },
+                colors: {
+                    primary: '#0070f3',
+                    secondary: '#7c3aed',
+                    gray: {
+                        50: '#fafafa',
+                        100: '#f4f4f5',
+                        800: '#27272a',
+                        900: '#18181b'
+                    }
+                },
+                animation: {
+                    'fade-in': 'fadeIn 0.5s ease-in-out',
+                    'slide-up': 'slideUp 0.3s ease-out',
+                    'pulse-slow': 'pulse 3s infinite'
+                }
+            }
+        }
+    };
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- @COMPONENT: Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-code-branch text-2xl text-primary"></i>
+                    <h1 class="text-xl font-bold text-gray-900">Universal Code Transpiler</h1>
+                    <span class="bg-secondary/10 text-secondary px-2 py-1 rounded-full text-xs font-medium">Beta</span>
+                </div>
+                <nav class="flex items-center space-x-6">
+                    <button class="text-gray-600 hover:text-gray-900 font-medium">Docs</button>
+                    <button class="text-gray-600 hover:text-gray-900 font-medium">Examples</button>
+                    <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+                        <i class="fab fa-github mr-2"></i>GitHub
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- @COMPONENT: MainWorkflow -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- @COMPONENT: UploadSection -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-upload text-primary mr-2"></i>
+                        Project Upload
+                    </h2>
+                    
+                    <!-- Drag & Drop Area -->
+                    <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600 mb-2">Drag & drop your project folder or</p>
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+                            <i class="fas fa-folder-open mr-2"></i>Browse Files
+                        </button>
+                        <p class="text-xs text-gray-500 mt-4">Supports .zip, folders, or individual files</p>
+                    </div>
+
+                    <!-- File List -->
+                    <div id="fileList" class="mt-4 space-y-2 hidden">
+                        <h3 class="font-medium text-gray-900">Uploaded Files:</h3>
+                        <!-- Sample uploaded files -->
+                        <div class="space-y-1">
+                            <div class="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                                <i class="fab fa-react text-blue-500 mr-2"></i>
+                                <span class="flex-1">src/components/App.jsx</span>
+                                <span class="text-xs">2.1 KB</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                                <i class="fab fa-node-js text-green-500 mr-2"></i>
+                                <span class="flex-1">server/index.js</span>
+                                <span class="text-xs">1.8 KB</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                                <i class="fas fa-file-code text-yellow-500 mr-2"></i>
+                                <span class="flex-1">package.json</span>
+                                <span class="text-xs">0.5 KB</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Results -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6" id="analysisResults" style="display: none;">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-chart-pie text-secondary mr-2"></i>
+                        Tech Stack Analysis
+                    </h3>
+                    
+                    <!-- Language Distribution Chart -->
+                    <div class="mb-6">
+                        <canvas id="techStackChart" width="300" height="200"></canvas>
+                    </div>
+                    
+                    <!-- Detected Technologies -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fab fa-react text-blue-500 mr-2"></i>
+                                <span class="font-medium">React</span>
+                            </div>
+                            <span class="text-sm text-gray-500">65.2%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fab fa-node-js text-green-500 mr-2"></i>
+                                <span class="font-medium">Node.js</span>
+                            </div>
+                            <span class="text-sm text-gray-500">28.1%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-database text-orange-500 mr-2"></i>
+                                <span class="font-medium">MongoDB</span>
+                            </div>
+                            <span class="text-sm text-gray-500">6.7%</span>
+                        </div>
+                    </div>
+
+                    <!-- Detected Frameworks -->
+                    <div class="mt-6 pt-4 border-t">
+                        <h4 class="font-medium text-gray-900 mb-3">Frameworks & Libraries</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Express.js</span>
+                            <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">TailwindCSS</span>
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Mongoose</span>
+                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">Axios</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: UploadSection -->
+
+            <!-- @COMPONENT: ConversionPanel -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Conversion Options -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                        <i class="fas fa-exchange-alt text-primary mr-2"></i>
+                        Conversion Configuration
+                    </h2>
+
+                    <!-- Conversion Tabs -->
+                    <div class="border-b border-gray-200 mb-6">
+                        <nav class="-mb-px flex space-x-8">
+                            <button class="border-primary text-primary border-b-2 py-2 px-1 text-sm font-medium">
+                                Frontend
+                            </button>
+                            <button class="border-transparent text-gray-500 hover:text-gray-700 border-b-2 py-2 px-1 text-sm font-medium">
+                                Backend
+                            </button>
+                            <button class="border-transparent text-gray-500 hover:text-gray-700 border-b-2 py-2 px-1 text-sm font-medium">
+                                Database
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- Frontend Conversion Options -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Source Framework -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-arrow-right text-gray-400 mr-1"></i>
+                                From (Detected)
+                            </label>
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 flex items-center">
+                                <i class="fab fa-react text-blue-500 mr-3"></i>
+                                <div>
+                                    <div class="font-medium text-gray-900">React</div>
+                                    <div class="text-xs text-gray-500">JavaScript Framework</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Target Framework -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-arrow-left text-gray-400 mr-1"></i>
+                                To (Select Target)
+                            </label>
+                            <select class="w-full border border-gray-300 rounded-lg p-3 focus:ring-primary focus:border-primary">
+                                <option value="">Select target framework...</option>
+                                <option value="typescript">React + TypeScript</option>
+                                <option value="react-native">React Native</option>
+                                <option value="flutter">Flutter (Dart)</option>
+                                <option value="kotlin">Kotlin (Jetpack Compose)</option>
+                                <option value="swiftui">SwiftUI</option>
+                                <option value="vue">Vue.js</option>
+                                <option value="angular">Angular</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Options -->
+                    <div class="mt-6 pt-4 border-t">
+                        <button class="flex items-center text-sm text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-cog mr-2"></i>
+                            Advanced Conversion Options
+                            <i class="fas fa-chevron-down ml-2"></i>
+                        </button>
+                        
+                        <div class="mt-4 space-y-4 hidden" id="advancedOptions">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
+                                    <span class="ml-2 text-sm text-gray-700">Preserve component structure</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
+                                    <span class="ml-2 text-sm text-gray-700">Maintain state management</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                    <span class="ml-2 text-sm text-gray-700">Add type annotations</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
+                                    <span class="ml-2 text-sm text-gray-700">Convert API calls</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AST & UIR Visualization -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-sitemap text-secondary mr-2"></i>
+                        AST & UIR Analysis
+                    </h3>
+
+                    <!-- AST/UIR Tabs -->
+                    <div class="border-b border-gray-200 mb-4">
+                        <nav class="-mb-px flex space-x-4">
+                            <button class="border-primary text-primary border-b-2 py-2 px-1 text-sm font-medium">
+                                AST Tree
+                            </button>
+                            <button class="border-transparent text-gray-500 hover:text-gray-700 border-b-2 py-2 px-1 text-sm font-medium">
+                                UIR Schema
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- AST Visualization -->
+                    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+                        <pre class="text-green-400 text-xs font-mono whitespace-pre-wrap">
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "ImportDeclaration",
+      "specifiers": [
+        {
+          "type": "ImportDefaultSpecifier",
+          "local": { "name": "React" }
+        }
+      ],
+      "source": { "value": "react" }
+    },
+    {
+      "type": "FunctionDeclaration",
+      "id": { "name": "App" },
+      "body": {
+        "type": "BlockStatement",
+        "body": [
+          {
+            "type": "ReturnStatement",
+            "argument": {
+              "type": "JSXElement",
+              "openingElement": {
+                "name": { "name": "div" },
+                "attributes": []
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}</pre>
+                    </div>
+
+                    <!-- Component Mapping -->
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Detected Components</h4>
+                            <div class="space-y-2">
+                                <div class="bg-blue-50 border-l-4 border-blue-400 p-3 text-sm">
+                                    <div class="font-mono">App.jsx</div>
+                                    <div class="text-gray-600">Function Component</div>
+                                </div>
+                                <div class="bg-green-50 border-l-4 border-green-400 p-3 text-sm">
+                                    <div class="font-mono">Header.jsx</div>
+                                    <div class="text-gray-600">Class Component</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Conversion Mapping</h4>
+                            <div class="space-y-2">
+                                <div class="bg-purple-50 border-l-4 border-purple-400 p-3 text-sm">
+                                    <div class="font-mono">App.tsx</div>
+                                    <div class="text-gray-600">Function Component + Types</div>
+                                </div>
+                                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 text-sm">
+                                    <div class="font-mono">Header.tsx</div>
+                                    <div class="text-gray-600">Function Component + Types</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conversion Progress -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6" id="conversionProgress" style="display: none;">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-cogs text-primary mr-2"></i>
+                        Conversion Progress
+                    </h3>
+
+                    <!-- Overall Progress -->
+                    <div class="mb-6">
+                        <div class="flex justify-between text-sm font-medium text-gray-900 mb-2">
+                            <span>Overall Progress</span>
+                            <span id="overallProgress">65%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-primary h-2 rounded-full transition-all duration-500" style="width: 65%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Step-by-step Progress -->
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-green-600 text-sm"></i>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <div class="font-medium text-gray-900">Parse project structure</div>
+                                <div class="text-sm text-gray-500">Completed in 0.8s</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-green-600 text-sm"></i>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <div class="font-medium text-gray-900">Generate AST trees</div>
+                                <div class="text-sm text-gray-500">Completed in 1.2s</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center">
+                                <i class="fas fa-spinner fa-spin text-sm"></i>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <div class="font-medium text-gray-900">Convert to UIR</div>
+                                <div class="text-sm text-gray-500">Processing...</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center opacity-50">
+                            <div class="flex-shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                <span class="text-gray-400 text-sm">4</span>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <div class="font-medium text-gray-900">Generate target code</div>
+                                <div class="text-sm text-gray-500">Waiting...</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center opacity-50">
+                            <div class="flex-shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                <span class="text-gray-400 text-sm">5</span>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <div class="font-medium text-gray-900">Validate & package</div>
+                                <div class="text-sm text-gray-500">Waiting...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Logs -->
+                    <div class="mt-6 pt-4 border-t">
+                        <h4 class="font-medium text-gray-900 mb-2">Conversion Log</h4>
+                        <div class="bg-gray-900 rounded-lg p-4 h-32 overflow-y-auto text-xs font-mono">
+                            <div class="text-green-400">[2024-01-20 10:30:15] Starting conversion process...</div>
+                            <div class="text-blue-400">[2024-01-20 10:30:16] Parsing React components...</div>
+                            <div class="text-green-400">[2024-01-20 10:30:17] Found 12 components, 8 hooks, 3 contexts</div>
+                            <div class="text-yellow-400">[2024-01-20 10:30:18] Converting JSX to TypeScript...</div>
+                            <div class="text-blue-400">[2024-01-20 10:30:19] Processing useState hooks...</div>
+                            <div class="text-green-400 animate-pulse">[2024-01-20 10:30:20] Generating type definitions...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-between items-center">
+                    <button class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Reset
+                    </button>
+                    
+                    <div class="space-x-4">
+                        <button id="analyzeBtn" class="bg-secondary text-white px-6 py-3 rounded-lg hover:bg-secondary/90 transition-colors">
+                            <i class="fas fa-search mr-2"></i>
+                            Analyze Project
+                        </button>
+                        <button id="convertBtn" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors">
+                            <i class="fas fa-exchange-alt mr-2"></i>
+                            Start Conversion
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Download Section (Hidden until conversion complete) -->
+                <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200 p-6 hidden" id="downloadSection">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Conversion Complete!
+                            </h3>
+                            <p class="text-gray-600 mt-1">Your project has been successfully converted to TypeScript React</p>
+                        </div>
+                        <button class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center">
+                            <i class="fas fa-download mr-2"></i>
+                            Download Project
+                        </button>
+                    </div>
+                    
+                    <!-- Conversion Summary -->
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white rounded-lg p-4">
+                            <div class="text-2xl font-bold text-green-600">12</div>
+                            <div class="text-sm text-gray-600">Components Converted</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <div class="text-2xl font-bold text-blue-600">8</div>
+                            <div class="text-sm text-gray-600">Hooks Preserved</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <div class="text-2xl font-bold text-purple-600">3.2s</div>
+                            <div class="text-sm text-gray-600">Total Time</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: ConversionPanel -->
+        </div>
+        <!-- @END_COMPONENT: MainWorkflow -->
+
+        <!-- @COMPONENT: LanguageCategorization -->
+        <div class="mt-12 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                <i class="fas fa-database text-primary mr-2"></i>
+                Supported Languages & Frameworks
+            </h2>
+
+            <!-- Category Tabs -->
+            <div class="border-b border-gray-200 mb-6">
+                <nav class="-mb-px flex space-x-8 overflow-x-auto">
+                    <button class="border-primary text-primary border-b-2 py-2 px-1 text-sm font-medium whitespace-nowrap">Frontend Web</button>
+                    <button class="border-transparent text-gray-500 hover:text-gray-700 border-b-2 py-2 px-1 text-sm font-medium whitespace-nowrap">Mobile Dev</button>
+                    <button class="border-transparent text-gray-500 hover:text-gray-700 border-b-2 py-2 px-1 text-sm font-medium whitespace-nowrap">Backend API</button>
+                    <button class="border-transparent text-gray-500 hover:text-gray-700 border-b-2 py-2 px-1 text-sm font-medium whitespace-nowrap">Database</button>
+                </nav>
+            </div>
+
+            <!-- Language Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- React -->
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center mb-3">
+                        <i class="fab fa-react text-blue-500 text-2xl mr-3"></i>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">React</h3>
+                            <p class="text-xs text-gray-500">Frontend Framework</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Component-based UI library for building interactive interfaces</p>
+                    <div class="flex flex-wrap gap-1 mb-3">
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">JSX</span>
+                        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Hooks</span>
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Virtual DOM</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>Maturity: High</span>
+                        <span>Difficulty: Medium</span>
+                    </div>
+                </div>
+
+                <!-- TypeScript -->
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center mb-3">
+                        <i class="fab fa-js-square text-blue-600 text-2xl mr-3"></i>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">TypeScript</h3>
+                            <p class="text-xs text-gray-500">Typed JavaScript</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Statically typed superset of JavaScript for better development</p>
+                    <div class="flex flex-wrap gap-1 mb-3">
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Types</span>
+                        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Interfaces</span>
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">IntelliSense</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>Maturity: High</span>
+                        <span>Difficulty: Medium</span>
+                    </div>
+                </div>
+
+                <!-- Node.js -->
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center mb-3">
+                        <i class="fab fa-node-js text-green-600 text-2xl mr-3"></i>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Node.js</h3>
+                            <p class="text-xs text-gray-500">Backend Runtime</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">JavaScript runtime for server-side development and APIs</p>
+                    <div class="flex flex-wrap gap-1 mb-3">
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Express</span>
+                        <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">NPM</span>
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Async</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>Maturity: High</span>
+                        <span>Difficulty: Medium</span>
+                    </div>
+                </div>
+
+                <!-- Python -->
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center mb-3">
+                        <i class="fab fa-python text-yellow-600 text-2xl mr-3"></i>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Python</h3>
+                            <p class="text-xs text-gray-500">Backend Language</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">High-level programming language for web APIs and data processing</p>
+                    <div class="flex flex-wrap gap-1 mb-3">
+                        <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">FastAPI</span>
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Django</span>
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Flask</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>Maturity: High</span>
+                        <span>Difficulty: Low</span>
+                    </div>
+                </div>
+
+                <!-- Flutter -->
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-mobile-alt text-blue-500 text-2xl mr-3"></i>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Flutter</h3>
+                            <p class="text-xs text-gray-500">Mobile Framework</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Cross-platform mobile development with Dart language</p>
+                    <div class="flex flex-wrap gap-1 mb-3">
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Dart</span>
+                        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Widgets</span>
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Hot Reload</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>Maturity: Medium</span>
+                        <span>Difficulty: Medium</span>
+                    </div>
+                </div>
+
+                <!-- Go -->
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-code text-cyan-600 text-2xl mr-3"></i>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Go</h3>
+                            <p class="text-xs text-gray-500">Systems Language</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Fast, compiled language for microservices and system programming</p>
+                    <div class="flex flex-wrap gap-1 mb-3">
+                        <span class="bg-cyan-100 text-cyan-800 px-2 py-1 rounded text-xs">Goroutines</span>
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Gin</span>
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Fast</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>Maturity: High</span>
+                        <span>Difficulty: Medium</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: LanguageCategorization -->
+
+    </div>
+
+    <!-- @COMPONENT: JavaScript -->
+    <script>
+        // TODO: Implement complete AST parsing, UIR generation, and code transpilation logic
+        // TODO: Add real file upload handling with drag & drop
+        // TODO: Implement actual tech stack analysis using AST parsing
+        // TODO: Add real-time conversion progress tracking
+        // TODO: Implement download functionality for converted projects
+
+        (function() {
+            // Drag & Drop Functionality
+            const dropZone = document.getElementById('dropZone');
+            const fileList = document.getElementById('fileList');
+            const analysisResults = document.getElementById('analysisResults');
+            const conversionProgress = document.getElementById('conversionProgress');
+            const downloadSection = document.getElementById('downloadSection');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const convertBtn = document.getElementById('convertBtn');
+
+            // Simulate file upload
+            dropZone.addEventListener('click', function() {
+                // Simulate file selection
+                fileList.style.display = 'block';
+                analyzeBtn.disabled = false;
+            });
+
+            // Simulate project analysis
+            analyzeBtn.addEventListener('click', function() {
+                analysisResults.style.display = 'block';
+                
+                // Create pie chart
+                const ctx = document.getElementById('techStackChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['React', 'Node.js', 'MongoDB'],
+                        datasets: [{
+                            data: [65.2, 28.1, 6.7],
+                            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
+                            }
+                        }
+                    }
+                });
+
+                convertBtn.disabled = false;
+            });
+
+            // Simulate conversion process
+            convertBtn.addEventListener('click', function() {
+                conversionProgress.style.display = 'block';
+                
+                // Simulate progress updates
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 10;
+                    document.getElementById('overallProgress').textContent = progress + '%';
+                    document.querySelector('.bg-primary.h-2').style.width = progress + '%';
+                    
+                    if (progress >= 100) {
+                        clearInterval(progressInterval);
+                        setTimeout(() => {
+                            downloadSection.classList.remove('hidden');
+                            conversionProgress.style.display = 'none';
+                        }, 1000);
+                    }
+                }, 500);
+            });
+
+            // Advanced options toggle
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.fa-chevron-down')) {
+                    const advancedOptions = document.getElementById('advancedOptions');
+                    advancedOptions.classList.toggle('hidden');
+                    e.target.classList.toggle('fa-chevron-down');
+                    e.target.classList.toggle('fa-chevron-up');
+                }
+            });
+
+            // Tab switching functionality
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('nav button')) {
+                    const tabs = e.target.closest('nav').querySelectorAll('button');
+                    tabs.forEach(tab => {
+                        tab.classList.remove('border-primary', 'text-primary');
+                        tab.classList.add('border-transparent', 'text-gray-500');
+                    });
+                    e.target.classList.add('border-primary', 'text-primary');
+                    e.target.classList.remove('border-transparent', 'text-gray-500');
+                }
+            });
+
+            // Animate elements on load
+            window.addEventListener('load', function() {
+                document.querySelectorAll('[class*="animate-"]').forEach(el => {
+                    el.style.opacity = '0';
+                    setTimeout(() => {
+                        el.style.opacity = '1';
+                    }, Math.random() * 500);
+                });
+            });
+        })();
+    </script>
+    <!-- @END_COMPONENT: JavaScript -->
+</body>
+</html>
