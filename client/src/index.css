@@ -40,12 +40,11 @@
   }
   
   html {
-    @apply dark;
+    color-scheme: dark;
   }
   
   body {
-    @apply bg-dark-900 text-foreground font-sans;
-    @apply bg-grid-pattern;
+    @apply bg-dark-900 text-foreground font-sans antialiased;
     background-attachment: fixed;
   }
   
@@ -69,30 +68,55 @@
 
 @layer components {
   .glass-card {
-    @apply bg-glass backdrop-blur-md border border-white/10 rounded-xl;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
   }
   
   .glass-button {
-    @apply glass-card px-6 py-3 font-medium transition-all duration-300;
-    @apply hover:bg-glass-light hover:scale-105 active:scale-95;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .glass-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+  }
+  
+  .glass-button:active {
+    transform: scale(0.95);
   }
   
   .neon-text {
-    @apply animate-neon-glow;
+    animation: neon-glow 1.5s ease-in-out infinite alternate;
   }
   
   .gradient-text {
-    @apply bg-gradient-to-r from-neon-blue via-neon-purple to-neon-pink bg-clip-text text-transparent;
+    background: linear-gradient(to right, #00D4FF, #8B5CF6, #F472B6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   
   .gradient-border {
-    @apply relative overflow-hidden rounded-xl;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.75rem;
   }
   
   .gradient-border::before {
     content: '';
-    @apply absolute inset-0 p-[1px] bg-gradient-to-r from-neon-blue via-neon-purple to-neon-pink rounded-xl;
-    @apply bg-gradient-to-r from-neon-blue via-neon-purple to-neon-pink;
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    background: linear-gradient(to right, #00D4FF, #8B5CF6, #F472B6);
+    border-radius: 0.75rem;
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -100,8 +124,10 @@
   }
   
   .morphing-blob {
-    @apply animate-morphing opacity-20 absolute;
-    background: linear-gradient(45deg, theme('colors.neon.blue'), theme('colors.neon.purple'), theme('colors.neon.pink'));
+    animation: morphing 3s ease-in-out infinite;
+    opacity: 0.2;
+    position: absolute;
+    background: linear-gradient(45deg, #00D4FF, #8B5CF6, #F472B6);
     filter: blur(40px);
   }
   
@@ -119,27 +145,46 @@
   }
   
   .upload-area {
-    @apply glass-card border-2 border-dashed border-neon-blue/30 transition-all duration-300;
-    @apply hover:border-neon-blue/60 hover:bg-neon-blue/5 hover:shadow-neon;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 2px dashed rgba(0, 212, 255, 0.3);
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+  }
+  
+  .upload-area:hover {
+    border-color: rgba(0, 212, 255, 0.6);
+    background: rgba(0, 212, 255, 0.05);
+    box-shadow: 0 0 5px #00D4FF, 0 0 20px #00D4FF;
   }
   
   .upload-area.drag-over {
-    @apply border-neon-blue shadow-neon bg-neon-blue/10;
+    border-color: #00D4FF;
+    box-shadow: 0 0 5px #00D4FF, 0 0 20px #00D4FF;
+    background: rgba(0, 212, 255, 0.1);
   }
   
   .progress-bar {
-    @apply relative overflow-hidden rounded-full bg-dark-700;
+    position: relative;
+    overflow: hidden;
+    border-radius: 9999px;
+    background-color: #16161F;
   }
   
   .progress-fill {
-    @apply h-full rounded-full bg-gradient-to-r from-neon-blue to-neon-purple;
-    @apply relative overflow-hidden;
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(to right, #00D4FF, #8B5CF6);
+    position: relative;
+    overflow: hidden;
   }
   
   .progress-fill::after {
     content: '';
-    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent;
-    @apply animate-[shimmer_2s_infinite];
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
     transform: translateX(-100%);
   }
   
@@ -152,13 +197,27 @@
   }
   
   .sidebar-item {
-    @apply flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200;
-    @apply hover:bg-glass-light hover:shadow-lg hover:scale-105;
-    @apply active:scale-95;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+  }
+  
+  .sidebar-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transform: scale(1.05);
+  }
+  
+  .sidebar-item:active {
+    transform: scale(0.95);
   }
   
   .sidebar-item.active {
-    @apply bg-gradient-to-r from-neon-blue/20 to-neon-purple/20;
-    @apply border border-neon-blue/30 shadow-neon;
+    background: linear-gradient(to right, rgba(0, 212, 255, 0.2), rgba(139, 92, 246, 0.2));
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    box-shadow: 0 0 5px #00D4FF, 0 0 20px #00D4FF;
   }
 }
