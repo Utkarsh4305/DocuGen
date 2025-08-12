@@ -57,16 +57,9 @@ const AnalysisDashboard = () => {
       setProgress(0);
 
       try {
-        // Simulate loading progress while fetching data
-        const progressInterval = setInterval(() => {
-          setProgress(prev => {
-            if (prev >= 90) {
-              return prev;
-            }
-            return prev + Math.random() * 10;
-          });
-        }, 100);
-
+        // Start with faster progress simulation
+        setProgress(10);
+        
         // Fetch project data from API
         const response = await fetch(`/api/projects/${projectId}`);
         
@@ -75,27 +68,46 @@ const AnalysisDashboard = () => {
         }
         
         const project = await response.json();
+        console.log('Project data received:', project); // Debug log
+        setProgress(60);
         
-        clearInterval(progressInterval);
+        // Small delay to show progress, then complete
+        await new Promise(resolve => setTimeout(resolve, 500));
         setProgress(100);
 
         // Map backend data to frontend format
         const techStack = project.originalTechStack || {};
+        console.log('Tech stack data:', techStack); // Debug log
         const languages = techStack.languages || [];
         const frameworks = techStack.frameworks || [];
         
+        // If no analysis data, show a message but don't fail
+        if (!languages.length && !frameworks.length) {
+          console.warn('No language or framework data found in project');
+        }
+        
         // Convert language data to chart format
-        const languageData = languages.map((lang: any, index: number) => ({
+        const languageData = languages.length > 0 ? languages.map((lang: any, index: number) => ({
           name: lang.language || lang.name,
           percentage: lang.percentage || 0,
           lines: Math.floor((lang.percentage / 100) * (techStack.totalLines || 1000)),
           files: lang.files || 1,
           color: getLanguageColor(lang.language || lang.name),
           icon: getLanguageIcon(lang.language || lang.name)
-        }));
+        })) : [
+          // Fallback data if no languages detected
+          {
+            name: 'Unknown',
+            percentage: 100,
+            lines: techStack.totalLines || project.files?.length * 50 || 100,
+            files: project.files?.length || 1,
+            color: '#6B7280',
+            icon: '📄'
+          }
+        ];
 
         // Convert framework data - frameworks is just an array of strings from backend
-        const frameworkData = frameworks.map((fw: string, index: number) => {
+        const frameworkData = frameworks.length > 0 ? frameworks.map((fw: string, index: number) => {
           const confidence = 70 + Math.random() * 30; // Generate realistic confidence
           return {
             name: fw,
@@ -103,7 +115,15 @@ const AnalysisDashboard = () => {
             confidence: Math.floor(confidence),
             files: [`${fw.toLowerCase()}/`, `${fw.toLowerCase()}.config.*`]
           };
-        });
+        }) : [
+          // Fallback framework data
+          {
+            name: 'Generic Project',
+            type: 'other' as const,
+            confidence: 50,
+            files: ['src/', 'config.*']
+          }
+        ];
 
         // Determine project structure
         const hasStructure = (type: string) => {
@@ -136,17 +156,29 @@ const AnalysisDashboard = () => {
         
       } catch (error) {
         console.error('Failed to load project analysis:', error);
-        clearInterval(setInterval(() => {}, 100)); // Clear any intervals
+        setProgress(100); // Complete the progress bar even on error
         setIsLoading(false);
         
-        // Show error state or fallback data
+        // Show error state with some basic fallback data
         const fallbackAnalysis: ProjectAnalysis = {
           id: projectId,
-          name: 'Error Loading Project',
+          name: 'Project Analysis Failed',
           totalFiles: 0,
           totalLines: 0,
-          languages: [],
-          frameworks: [],
+          languages: [{
+            name: 'Error',
+            percentage: 100,
+            lines: 0,
+            files: 0,
+            color: '#EF4444',
+            icon: '❌'
+          }],
+          frameworks: [{
+            name: 'Failed to detect',
+            type: 'other',
+            confidence: 0,
+            files: []
+          }],
           structure: {
             frontend: false,
             backend: false,

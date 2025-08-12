@@ -64,8 +64,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
+      
+      // Add debug logging
+      console.log(`Fetching project ${req.params.id}:`, {
+        name: project.name,
+        hasOriginalTechStack: !!project.originalTechStack,
+        techStackKeys: project.originalTechStack ? Object.keys(project.originalTechStack) : [],
+        filesCount: project.files ? (Array.isArray(project.files) ? project.files.length : 'not array') : 'no files'
+      });
+      
       res.json(project);
     } catch (error) {
+      console.error(`Error fetching project ${req.params.id}:`, error);
       res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
