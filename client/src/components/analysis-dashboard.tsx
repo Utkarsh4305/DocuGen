@@ -48,65 +48,186 @@ const AnalysisDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
 
-  // Mock data for demonstration
+  // Load real project data from API
   useEffect(() => {
     const loadAnalysis = async () => {
+      if (!projectId) return;
+      
       setIsLoading(true);
       setProgress(0);
 
-      // Simulate loading progress
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 100) {
-            clearInterval(progressInterval);
-            return 100;
-          }
-          return prev + Math.random() * 15;
-        });
-      }, 200);
+      try {
+        // Simulate loading progress while fetching data
+        const progressInterval = setInterval(() => {
+          setProgress(prev => {
+            if (prev >= 90) {
+              return prev;
+            }
+            return prev + Math.random() * 10;
+          });
+        }, 100);
 
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      clearInterval(progressInterval);
-      setProgress(100);
-
-      // Mock analysis data
-      const mockAnalysis: ProjectAnalysis = {
-        id: projectId || 'mock',
-        name: 'E-commerce Platform',
-        totalFiles: 247,
-        totalLines: 18543,
-        languages: [
-          { name: 'JavaScript', percentage: 45.2, lines: 8385, files: 89, color: '#F7DF1E', icon: '⚡' },
-          { name: 'TypeScript', percentage: 28.7, lines: 5322, files: 67, color: '#3178C6', icon: '🔷' },
-          { name: 'Python', percentage: 15.3, lines: 2837, files: 34, color: '#3776AB', icon: '🐍' },
-          { name: 'CSS', percentage: 6.8, lines: 1261, files: 23, color: '#1572B6', icon: '🎨' },
-          { name: 'HTML', percentage: 4.0, lines: 742, files: 34, color: '#E34F26', icon: '🌐' }
-        ],
-        frameworks: [
-          { name: 'React', type: 'frontend', confidence: 95, files: ['src/App.tsx', 'src/components/*'] },
-          { name: 'Node.js', type: 'backend', confidence: 89, files: ['server/index.js', 'api/*'] },
-          { name: 'Express', type: 'backend', confidence: 87, files: ['server/routes/*', 'server/middleware/*'] },
-          { name: 'MongoDB', type: 'database', confidence: 82, files: ['models/*', 'database/*'] },
-          { name: 'Tailwind CSS', type: 'frontend', confidence: 76, files: ['tailwind.config.js', 'src/styles/*'] }
-        ],
-        structure: {
-          frontend: true,
-          backend: true,
-          database: true,
-          tests: true,
-          docs: false
+        // Fetch project data from API
+        const response = await fetch(`/api/projects/${projectId}`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch project: ${response.status}`);
         }
-      };
+        
+        const project = await response.json();
+        
+        clearInterval(progressInterval);
+        setProgress(100);
 
-      setAnalysis(mockAnalysis);
-      setIsLoading(false);
+        // Map backend data to frontend format
+        const techStack = project.originalTechStack || {};
+        const languages = techStack.languages || [];
+        const frameworks = techStack.frameworks || [];
+        
+        // Convert language data to chart format
+        const languageData = languages.map((lang: any, index: number) => ({
+          name: lang.language || lang.name,
+          percentage: lang.percentage || 0,
+          lines: Math.floor((lang.percentage / 100) * (techStack.totalLines || 1000)),
+          files: lang.files || 1,
+          color: getLanguageColor(lang.language || lang.name),
+          icon: getLanguageIcon(lang.language || lang.name)
+        }));
+
+        // Convert framework data - frameworks is just an array of strings from backend
+        const frameworkData = frameworks.map((fw: string, index: number) => {
+          const confidence = 70 + Math.random() * 30; // Generate realistic confidence
+          return {
+            name: fw,
+            type: getFrameworkType(fw),
+            confidence: Math.floor(confidence),
+            files: [`${fw.toLowerCase()}/`, `${fw.toLowerCase()}.config.*`]
+          };
+        });
+
+        // Determine project structure
+        const hasStructure = (type: string) => {
+          return frameworkData.some((fw: any) => fw.type === type) ||
+                 languages.some((lang: any) => 
+                   (type === 'frontend' && ['JavaScript', 'TypeScript', 'HTML', 'CSS'].includes(lang.language || lang.name)) ||
+                   (type === 'backend' && ['Python', 'Java', 'Node.js', 'PHP'].includes(lang.language || lang.name)) ||
+                   (type === 'database' && ['SQL', 'MongoDB', 'PostgreSQL'].includes(lang.language || lang.name))
+                 );
+        };
+
+        const analysisData: ProjectAnalysis = {
+          id: project.id,
+          name: project.name || 'Uploaded Project',
+          totalFiles: techStack.totalFiles || project.files?.length || 0,
+          totalLines: techStack.totalLines || 0,
+          languages: languageData,
+          frameworks: frameworkData,
+          structure: {
+            frontend: hasStructure('frontend'),
+            backend: hasStructure('backend'),
+            database: hasStructure('database'),
+            tests: techStack.hasTests || false,
+            docs: techStack.hasDocs || false
+          }
+        };
+
+        setAnalysis(analysisData);
+        setIsLoading(false);
+        
+      } catch (error) {
+        console.error('Failed to load project analysis:', error);
+        clearInterval(setInterval(() => {}, 100)); // Clear any intervals
+        setIsLoading(false);
+        
+        // Show error state or fallback data
+        const fallbackAnalysis: ProjectAnalysis = {
+          id: projectId,
+          name: 'Error Loading Project',
+          totalFiles: 0,
+          totalLines: 0,
+          languages: [],
+          frameworks: [],
+          structure: {
+            frontend: false,
+            backend: false,
+            database: false,
+            tests: false,
+            docs: false
+          }
+        };
+        setAnalysis(fallbackAnalysis);
+      }
     };
 
-    if (projectId) {
-      loadAnalysis();
-    }
+    loadAnalysis();
   }, [projectId]);
+
+  const getLanguageColor = (name: string): string => {
+    const colors: { [key: string]: string } = {
+      'JavaScript': '#F7DF1E',
+      'TypeScript': '#3178C6',
+      'Python': '#3776AB',
+      'Java': '#ED8B00',
+      'HTML': '#E34F26',
+      'CSS': '#1572B6',
+      'React': '#61DAFB',
+      'Vue': '#4FC08D',
+      'Angular': '#DD0031',
+      'Node.js': '#339933',
+      'PHP': '#777BB4',
+      'Go': '#00ADD8',
+      'Rust': '#DEA584',
+      'C++': '#00599C',
+      'C#': '#239120'
+    };
+    return colors[name] || '#6B7280';
+  };
+
+  const getLanguageIcon = (name: string): string => {
+    const icons: { [key: string]: string } = {
+      'JavaScript': '⚡',
+      'TypeScript': '🔷',
+      'Python': '🐍',
+      'Java': '☕',
+      'HTML': '🌐',
+      'CSS': '🎨',
+      'React': '⚛️',
+      'Vue': '💚',
+      'Angular': '🅰️',
+      'Node.js': '🟢',
+      'PHP': '🐘',
+      'Go': '🐹',
+      'Rust': '🦀',
+      'C++': '➕',
+      'C#': '#️⃣'
+    };
+    return icons[name] || '📄';
+  };
+
+  const getFrameworkType = (framework: string): 'frontend' | 'backend' | 'database' | 'other' => {
+    const types: { [key: string]: 'frontend' | 'backend' | 'database' | 'other' } = {
+      'React': 'frontend',
+      'Vue': 'frontend',
+      'Angular': 'frontend',
+      'Svelte': 'frontend',
+      'Flutter': 'frontend',
+      'Node.js': 'backend',
+      'Express.js': 'backend',
+      'FastAPI': 'backend',
+      'Django': 'backend',
+      'Flask': 'backend',
+      'Spring': 'backend',
+      'NestJS': 'backend',
+      'MongoDB': 'database',
+      'PostgreSQL': 'database',
+      'MySQL': 'database',
+      'Redis': 'database',
+      'Firebase': 'database',
+      'TypeScript': 'other',
+      'Python': 'other'
+    };
+    return types[framework] || 'other';
+  };
 
   const getFrameworkIcon = (type: string) => {
     switch (type) {

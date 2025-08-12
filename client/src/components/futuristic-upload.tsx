@@ -35,39 +35,52 @@ const FuturisticUpload = () => {
 
     setUploadState({ status: 'uploading', progress: 0 });
 
-    // Simulate upload progress
-    const progressInterval = setInterval(() => {
-      setUploadState(prev => {
-        const newProgress = Math.min(prev.progress + Math.random() * 15, 90);
-        return { ...prev, progress: newProgress };
-      });
-    }, 200);
-
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('zipFile', file);
+      formData.append('name', file.name.replace('.zip', ''));
+
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadState(prev => {
+          const newProgress = Math.min(prev.progress + Math.random() * 15, 90);
+          return { ...prev, progress: newProgress };
+        });
+      }, 200);
+
+      // Upload to backend
+      const response = await fetch('/api/projects/upload-zip', {
+        method: 'POST',
+        body: formData,
+      });
+
       clearInterval(progressInterval);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
+        throw new Error(errorData.error || `Upload failed with status ${response.status}`);
+      }
+
+      const result = await response.json();
       
-      const mockProjectId = Math.random().toString(36).substr(2, 9);
       setUploadState({
         status: 'success',
         progress: 100,
-        message: 'Project uploaded successfully!',
-        projectId: mockProjectId
+        message: 'Project uploaded and analyzed successfully!',
+        projectId: result.project.id
       });
 
       // Redirect to analysis page after success animation
       setTimeout(() => {
-        setLocation(`/analysis/${mockProjectId}`);
+        setLocation(`/analysis/${result.project.id}`);
       }, 2000);
       
     } catch (error) {
-      clearInterval(progressInterval);
       setUploadState({
         status: 'error',
         progress: 0,
-        message: 'Upload failed. Please try again.'
+        message: error instanceof Error ? error.message : 'Upload failed. Please try again.'
       });
     }
   }, [setLocation]);
